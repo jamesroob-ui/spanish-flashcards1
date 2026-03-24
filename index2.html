@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Spanish Sentences</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e1117;
+    --surface: #181d27;
+    --surface2: #1f2636;
+    --border: rgba(255,255,255,0.08);
+    --text: #f0ece4;
+    --muted: #7a8499;
+    --accent: #e8b84b;
+    --accent2: #5bb8a0;
+    --accent3: #c47ab4;
+    --restaurant: #e07b5b;
+    --grocery: #5bb8a0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; overflow-x: hidden; }
+  body {
+    display: flex; flex-direction: column; min-height: 100vh;
+    background-image: radial-gradient(ellipse at 20% 10%, rgba(224,123,91,0.07) 0%, transparent 50%),
+                      radial-gradient(ellipse at 80% 90%, rgba(91,184,160,0.06) 0%, transparent 50%);
+  }
+
+  header {
+    padding: 1.2rem 1.5rem 0.8rem;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 0.5px solid var(--border);
+    flex-shrink: 0;
+  }
+  .logo { font-family: 'Fraunces', serif; font-size: 20px; color: var(--accent); letter-spacing: -0.3px; }
+  .logo span { color: var(--muted); font-style: italic; font-size: 16px; }
+  .word-count { font-size: 12px; color: var(--muted); }
+
+  .progress-track { height: 2px; background: var(--surface2); flex-shrink: 0; }
+  .progress-fill { height: 2px; background: linear-gradient(90deg, var(--restaurant), var(--grocery)); transition: width 0.4s ease; }
+
+  .cat-scroll {
+    display: flex; gap: 6px; padding: 10px 1.5rem;
+    overflow-x: auto; scrollbar-width: none;
+    border-bottom: 0.5px solid var(--border); flex-shrink: 0;
+  }
+  .cat-scroll::-webkit-scrollbar { display: none; }
+  .cat-pill {
+    flex-shrink: 0; padding: 5px 14px; border-radius: 20px;
+    border: 0.5px solid var(--border); background: transparent;
+    color: var(--muted); font-size: 12px; font-family: 'DM Sans', sans-serif;
+    cursor: pointer; transition: all 0.15s; white-space: nowrap;
+  }
+  .cat-pill.active-restaurant { background: var(--restaurant); color: #0e1117; border-color: var(--restaurant); font-weight: 500; }
+  .cat-pill.active-grocery { background: var(--grocery); color: #0e1117; border-color: var(--grocery); font-weight: 500; }
+  .cat-pill.active-all { background: var(--accent); color: #0e1117; border-color: var(--accent); font-weight: 500; }
+
+  main { flex: 1; display: flex; flex-direction: column; padding: 1.5rem; gap: 1rem; }
+
+  .card {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: 20px; padding: 2rem 1.5rem; flex: 1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; position: relative; min-height: 260px;
+  }
+  .card.speaking-restaurant { border-color: rgba(224,123,91,0.35); }
+  .card.speaking-grocery { border-color: rgba(91,184,160,0.35); }
+
+  .scene-badge {
+    position: absolute; top: 1rem; left: 50%; transform: translateX(-50%);
+    font-size: 11px; font-weight: 500; letter-spacing: 0.06em;
+    text-transform: uppercase; padding: 3px 12px; border-radius: 20px;
+    white-space: nowrap;
+  }
+  .scene-restaurant { background: rgba(224,123,91,0.15); color: var(--restaurant); }
+  .scene-grocery { background: rgba(91,184,160,0.15); color: var(--grocery); }
+
+  .lang-tag {
+    font-size: 11px; font-weight: 500; letter-spacing: 0.06em;
+    text-transform: uppercase; padding: 3px 12px; border-radius: 20px;
+    margin-bottom: 1rem; display: inline-block;
+  }
+  .lang-en { background: rgba(91,184,160,0.12); color: var(--accent2); }
+  .lang-es { background: rgba(232,184,75,0.12); color: var(--accent); }
+
+  .sentence-en {
+    font-family: 'Fraunces', serif; font-size: clamp(17px, 4.5vw, 22px);
+    font-weight: 400; color: var(--text); line-height: 1.45; margin-bottom: 0.75rem;
+  }
+  .sentence-es {
+    font-family: 'Fraunces', serif; font-size: clamp(16px, 4vw, 21px);
+    font-weight: 600; color: var(--accent); line-height: 1.45; margin-bottom: 6px;
+    display: none;
+  }
+  .pron { font-size: 13px; color: var(--muted); font-style: italic; display: none; line-height: 1.5; }
+
+  .speaker-note {
+    position: absolute; bottom: 1rem; right: 1.2rem;
+    font-size: 11px; color: var(--muted); font-style: italic;
+  }
+
+  .wave { display: none; align-items: center; gap: 3px; height: 20px; margin-bottom: 10px; }
+  .wave.active { display: flex; }
+  .wave span { display: block; width: 3px; border-radius: 3px; animation: wave 0.8s ease-in-out infinite; }
+  .wave span:nth-child(1) { animation-delay: 0s; }
+  .wave span:nth-child(2) { animation-delay: 0.1s; }
+  .wave span:nth-child(3) { animation-delay: 0.2s; }
+  .wave span:nth-child(4) { animation-delay: 0.3s; }
+  .wave span:nth-child(5) { animation-delay: 0.4s; }
+  .wave-restaurant span { background: var(--restaurant); }
+  .wave-grocery span { background: var(--grocery); }
+  @keyframes wave {
+    0%, 100% { height: 5px; opacity: 0.4; }
+    50% { height: 18px; opacity: 1; }
+  }
+
+  .nav-row { display: flex; gap: 10px; align-items: center; }
+  .nav-btn {
+    width: 44px; height: 44px; border-radius: 50%;
+    border: 0.5px solid var(--border); background: var(--surface);
+    color: var(--muted); font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; flex-shrink: 0;
+  }
+  .nav-btn:active { transform: scale(0.93); }
+
+  .play-btn {
+    flex: 1; height: 52px; border-radius: 14px; border: none;
+    background: var(--accent); color: #0e1117;
+    font-size: 15px; font-weight: 500; font-family: 'DM Sans', sans-serif;
+    cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .play-btn:active { transform: scale(0.97); }
+  .play-btn.playing { background: var(--surface2); color: var(--text); border: 0.5px solid var(--border); }
+
+  .secondary-row { display: flex; gap: 10px; }
+  .sec-btn {
+    flex: 1; height: 44px; border-radius: 12px;
+    border: 0.5px solid var(--border); background: var(--surface);
+    color: var(--text); font-size: 13px; font-family: 'DM Sans', sans-serif;
+    cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .sec-btn:active { transform: scale(0.97); background: var(--surface2); }
+  .sec-btn.on { background: rgba(196,122,180,0.15); border-color: rgba(196,122,180,0.3); color: var(--accent3); }
+
+  .settings-row {
+    display: flex; gap: 1rem; align-items: center;
+    padding: 0.75rem 1rem; background: var(--surface);
+    border: 0.5px solid var(--border); border-radius: 12px;
+  }
+  .settings-row label { font-size: 12px; color: var(--muted); flex-shrink: 0; }
+  .settings-row input[type=range] { flex: 1; accent-color: var(--accent); height: 4px; }
+  .settings-row .val { font-size: 12px; color: var(--text); min-width: 30px; text-align: right; }
+
+  .status { text-align: center; font-size: 13px; color: var(--muted); min-height: 18px; font-style: italic; }
+  .tip { text-align: center; font-size: 12px; color: var(--muted); padding-bottom: 0.5rem; opacity: 0.6; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Español <span>sentences</span></div>
+  <div class="word-count" id="wordCount">1 / 80</div>
+</header>
+<div class="progress-track"><div class="progress-fill" id="progressFill" style="width:1.25%"></div></div>
+
+<div class="cat-scroll" id="catScroll"></div>
+
+<main>
+  <div class="card" id="card">
+    <div class="scene-badge scene-restaurant" id="sceneBadge">🍽 Restaurant</div>
+    <div class="wave" id="wave"><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="lang-tag lang-en" id="langTag">English</div>
+    <div class="sentence-en" id="sentEn">—</div>
+    <div class="sentence-es" id="sentEs"></div>
+    <div class="pron" id="sentPron"></div>
+    <div class="speaker-note" id="speakerNote"></div>
+  </div>
+
+  <div class="nav-row">
+    <button class="nav-btn" onclick="navigate(-1)">‹</button>
+    <button class="play-btn" id="playBtn" onclick="playCard()">
+      <span id="playIcon">▶</span> <span id="playLabel">Play sentence</span>
+    </button>
+    <button class="nav-btn" onclick="navigate(1)">›</button>
+  </div>
+
+  <div class="secondary-row">
+    <button class="sec-btn" id="autoBtn" onclick="toggleAuto()">⟳ Auto-play all</button>
+    <button class="sec-btn" onclick="shuffleSentences()">⇌ Shuffle</button>
+  </div>
+
+  <div class="settings-row">
+    <label>Speed</label>
+    <input type="range" min="0.5" max="1.3" step="0.1" value="0.8" id="speedSlider">
+    <span class="val" id="speedVal">0.8×</span>
+    <label>Pause</label>
+    <input type="range" min="1" max="4" step="0.5" value="2" id="pauseSlider">
+    <span class="val" id="pauseVal">2.0s</span>
+  </div>
+
+  <div class="status" id="status"></div>
+  <div class="tip">Tap card to reveal Spanish • Swipe left/right to navigate</div>
+</main>
+
+<script>
+const ALL = [
+  // ── RESTAURANT: You ordering ──
+  {en:"A table for two, please.",es:"Una mesa para dos, por favor.",pron:"OO-nah MEH-sah PAH-rah dohs, por fah-BOR.",cat:"restaurant",sub:"ordering",speaker:"you"},
+  {en:"Can I see the menu, please?",es:"¿Me puede traer el menú, por favor?",pron:"¿Meh PWEH-deh trah-EHR el meh-NOO, por fah-BOR?",cat:"restaurant",sub:"ordering",speaker:"you"},
+  {en:"What do you recommend?",es:"¿Qué recomienda usted?",pron:"¿Keh reh-koh-mee-EN-dah oos-TED?",cat:"restaurant",sub:"ordering",speaker:"you"},
+  {en:"I would like the fish, please.",es:"Quisiera el pescado, por favor.",pron:"Kee-see-EH-rah el pes-KAH-doh, por fah-BOR.",cat:"restaurant",sub:"ordering",speaker:"you"},
+  {en:"I'll have the chicken.",es:"Voy a pedir el pollo.",pron:"Boy ah peh-DEER el POH-yoh.",cat:"restaurant",sub:"ordering",speaker:"you"},
+  {en:"Can I have that without onions?",es:"¿Me lo puede traer sin cebolla?",pron:"¿Meh loh PWEH-deh trah-EHR seen seh-BOH-yah?",cat:"restaurant",sub:"ordering",speaker:"you"},
+  {en:"Is this dish spicy?",es:"¿Este plato es picante?",pron:"¿ES-teh PLAH-toh es pee-KAN-teh?",cat:"restaurant",sub:"ordering",speaker:"you"},
+  {en:"I'm allergic to shellfish.",es:"Soy alérgico a los mariscos.",pron:"Soy ah-LEHR-hee-koh ah los mah-REES-kos.",cat:"restaurant",sub:"ordering",speaker:"you"},
+  {en:"Do you have a vegetarian option?",es:"¿Tiene una opción vegetariana?",pron:"¿Tee-EH-neh OO-nah op-see-ON beh-heh-tah-ree-AH-nah?",cat:"restaurant",sub:"ordering",speaker:"you"},
+  {en:"Can we get some water, please?",es:"¿Nos puede traer agua, por favor?",pron:"¿Nos PWEH-deh trah-EHR AH-gwah, por fah-BOR?",cat:"restaurant",sub:"ordering",speaker:"you"},
+  {en:"Another beer, please.",es:"Otra cerveza, por favor.",pron:"OH-trah sehr-BEH-sah, por fah-BOR.",cat:"restaurant",sub:"ordering",speaker:"you"},
+  {en:"The check, please.",es:"La cuenta, por favor.",pron:"Lah KWEN-tah, por fah-BOR.",cat:"restaurant",sub:"ordering",speaker:"you"},
+  {en:"Can we pay separately?",es:"¿Podemos pagar por separado?",pron:"¿Poh-DEH-mos pah-GAR por seh-pah-RAH-doh?",cat:"restaurant",sub:"ordering",speaker:"you"},
+  {en:"Do you accept credit cards?",es:"¿Aceptan tarjetas de crédito?",pron:"¿Ah-SEP-tan tar-HEH-tas deh KREH-dee-toh?",cat:"restaurant",sub:"ordering",speaker:"you"},
+  {en:"That was delicious, thank you.",es:"Estuvo delicioso, gracias.",pron:"Es-TOO-boh deh-lee-see-OH-soh, GRAH-see-as.",cat:"restaurant",sub:"compliments",speaker:"you"},
+  {en:"Where is the bathroom?",es:"¿Dónde está el baño?",pron:"¿DON-deh es-TAH el BAH-nyoh?",cat:"restaurant",sub:"ordering",speaker:"you"},
+  {en:"Excuse me, this isn't what I ordered.",es:"Perdón, esto no es lo que pedí.",pron:"Pehr-DON, ES-toh no es loh keh peh-DEE.",cat:"restaurant",sub:"problems",speaker:"you"},
+  {en:"Can I have a to-go box?",es:"¿Me puede dar una caja para llevar?",pron:"¿Meh PWEH-deh dar OO-nah KAH-hah PAH-rah yeh-BAR?",cat:"restaurant",sub:"ordering",speaker:"you"},
+  {en:"Is service included?",es:"¿Está incluido el servicio?",pron:"¿Es-TAH een-kloo-EE-doh el sehr-BEE-see-oh?",cat:"restaurant",sub:"ordering",speaker:"you"},
+  {en:"We have a reservation.",es:"Tenemos una reservación.",pron:"Teh-NEH-mos OO-nah reh-sehr-bah-see-ON.",cat:"restaurant",sub:"arriving",speaker:"you"},
+
+  // ── RESTAURANT: Staff may say to you ──
+  {en:"How many people?",es:"¿Cuántas personas?",pron:"¿KWAHN-tas pehr-SOH-nas?",cat:"restaurant",sub:"staff",speaker:"staff"},
+  {en:"Do you have a reservation?",es:"¿Tiene reservación?",pron:"¿Tee-EH-neh reh-sehr-bah-see-ON?",cat:"restaurant",sub:"staff",speaker:"staff"},
+  {en:"Right this way, please.",es:"Por aquí, por favor.",pron:"Por ah-KEE, por fah-BOR.",cat:"restaurant",sub:"staff",speaker:"staff"},
+  {en:"Are you ready to order?",es:"¿Están listos para ordenar?",pron:"¿Es-TAN LEES-tos PAH-rah or-deh-NAR?",cat:"restaurant",sub:"staff",speaker:"staff"},
+  {en:"What would you like to drink?",es:"¿Qué desean tomar?",pron:"¿Keh deh-SEH-an toh-MAR?",cat:"restaurant",sub:"staff",speaker:"staff"},
+  {en:"Would you like anything else?",es:"¿Desean algo más?",pron:"¿Deh-SEH-an AL-goh mas?",cat:"restaurant",sub:"staff",speaker:"staff"},
+  {en:"Our special today is grilled chicken.",es:"El especial de hoy es pollo a la parrilla.",pron:"El es-peh-see-AL deh oy es POH-yoh ah lah pah-REE-yah.",cat:"restaurant",sub:"staff",speaker:"staff"},
+  {en:"I'll be right back.",es:"Ahorita regreso.",pron:"Ah-oh-REE-tah reh-GREH-soh.",cat:"restaurant",sub:"staff",speaker:"staff"},
+  {en:"Sorry for the wait.",es:"Disculpe la espera.",pron:"Dees-KOOL-peh lah es-PEH-rah.",cat:"restaurant",sub:"staff",speaker:"staff"},
+  {en:"Enjoy your meal.",es:"Buen provecho.",pron:"Bwen pro-BEH-choh.",cat:"restaurant",sub:"staff",speaker:"staff"},
+  {en:"Will that be cash or card?",es:"¿Va a pagar en efectivo o con tarjeta?",pron:"¿Bah ah pah-GAR en eh-fek-TEE-boh oh kon tar-HEH-tah?",cat:"restaurant",sub:"staff",speaker:"staff"},
+  {en:"That dish takes about twenty minutes.",es:"Ese plato tarda unos veinte minutos.",pron:"EH-seh PLAH-toh TAR-dah OO-nos BEIN-teh mee-NOO-tos.",cat:"restaurant",sub:"staff",speaker:"staff"},
+
+  // ── GROCERY: You asking ──
+  {en:"Where can I find the bread?",es:"¿Dónde puedo encontrar el pan?",pron:"¿DON-deh PWEH-doh en-kon-TRAR el pan?",cat:"grocery",sub:"finding",speaker:"you"},
+  {en:"Where is the dairy section?",es:"¿Dónde está la sección de lácteos?",pron:"¿DON-deh es-TAH lah sek-see-ON deh LAK-teh-os?",cat:"grocery",sub:"finding",speaker:"you"},
+  {en:"Do you sell fresh fish here?",es:"¿Venden pescado fresco aquí?",pron:"¿BEN-den pes-KAH-doh FRES-koh ah-KEE?",cat:"grocery",sub:"finding",speaker:"you"},
+  {en:"Do you have organic vegetables?",es:"¿Tienen verduras orgánicas?",pron:"¿Tee-EH-nen behr-DOO-ras or-GAH-nee-kas?",cat:"grocery",sub:"finding",speaker:"you"},
+  {en:"How much does this cost?",es:"¿Cuánto cuesta esto?",pron:"¿KWAHN-toh KWES-tah ES-toh?",cat:"grocery",sub:"prices",speaker:"you"},
+  {en:"Is this on sale?",es:"¿Esto está en oferta?",pron:"¿ES-toh es-TAH en oh-FEHR-tah?",cat:"grocery",sub:"prices",speaker:"you"},
+  {en:"Do you have a smaller size?",es:"¿Tiene una presentación más pequeña?",pron:"¿Tee-EH-neh OO-nah preh-sen-tah-see-ON mas peh-KEH-nyah?",cat:"grocery",sub:"finding",speaker:"you"},
+  {en:"Where are the bags?",es:"¿Dónde están las bolsas?",pron:"¿DON-deh es-TAN las BOL-sas?",cat:"grocery",sub:"checkout",speaker:"you"},
+  {en:"Can you help me find something?",es:"¿Me puede ayudar a encontrar algo?",pron:"¿Meh PWEH-deh ah-yoo-DAR ah en-kon-TRAR AL-goh?",cat:"grocery",sub:"finding",speaker:"you"},
+  {en:"I'm looking for hot sauce.",es:"Estoy buscando salsa picante.",pron:"Es-TOY boos-KAN-doh SAL-sah pee-KAN-teh.",cat:"grocery",sub:"finding",speaker:"you"},
+  {en:"Which one would you recommend?",es:"¿Cuál me recomienda?",pron:"¿Kwahl meh reh-koh-mee-EN-dah?",cat:"grocery",sub:"finding",speaker:"you"},
+  {en:"Is this product gluten free?",es:"¿Este producto es libre de gluten?",pron:"¿ES-teh pro-DOOK-toh es LEE-breh deh GLOO-ten?",cat:"grocery",sub:"finding",speaker:"you"},
+  {en:"I'll pay with a card.",es:"Voy a pagar con tarjeta.",pron:"Boy ah pah-GAR kon tar-HEH-tah.",cat:"grocery",sub:"checkout",speaker:"you"},
+  {en:"Can I get a bag please?",es:"¿Me puede dar una bolsa, por favor?",pron:"¿Meh PWEH-deh dar OO-nah BOL-sah, por fah-BOR?",cat:"grocery",sub:"checkout",speaker:"you"},
+  {en:"I think there's a mistake with the price.",es:"Creo que hay un error en el precio.",pron:"KREH-oh keh eye oon eh-ROHR en el PREH-see-oh.",cat:"grocery",sub:"checkout",speaker:"you"},
+  {en:"Do you have a loyalty card?",es:"¿Tiene tarjeta de cliente frecuente?",pron:"¿Tee-EH-neh tar-HEH-tah deh klee-EN-teh freh-KWEN-teh?",cat:"grocery",sub:"checkout",speaker:"you"},
+
+  // ── GROCERY: Workers may say to you ──
+  {en:"Can I help you find something?",es:"¿Le puedo ayudar a encontrar algo?",pron:"¿Leh PWEH-doh ah-yoo-DAR ah en-kon-TRAR AL-goh?",cat:"grocery",sub:"worker",speaker:"staff"},
+  {en:"That item is in aisle five.",es:"Ese artículo está en el pasillo cinco.",pron:"EH-seh ar-TEE-koo-loh es-TAH en el pah-SEE-yoh SEEN-koh.",cat:"grocery",sub:"worker",speaker:"staff"},
+  {en:"We're out of stock on that right now.",es:"En este momento no tenemos en existencia.",pron:"En ES-teh moh-MEN-toh no teh-NEH-mos en ex-ees-TEN-see-ah.",cat:"grocery",sub:"worker",speaker:"staff"},
+  {en:"We get a new delivery on Thursdays.",es:"Recibimos nueva mercancía los jueves.",pron:"Reh-see-BEE-mos NWEH-bah mehr-kan-SEE-ah los HWEH-bes.",cat:"grocery",sub:"worker",speaker:"staff"},
+  {en:"The price is on the shelf label.",es:"El precio está en la etiqueta del estante.",pron:"El PREH-see-oh es-TAH en lah eh-tee-KEH-tah del es-TAN-teh.",cat:"grocery",sub:"worker",speaker:"staff"},
+  {en:"Do you have your loyalty card?",es:"¿Tiene su tarjeta de puntos?",pron:"¿Tee-EH-neh soo tar-HEH-tah deh POON-tos?",cat:"grocery",sub:"worker",speaker:"staff"},
+  {en:"Do you need a bag?",es:"¿Necesita una bolsa?",pron:"¿Neh-seh-SEE-tah OO-nah BOL-sah?",cat:"grocery",sub:"worker",speaker:"staff"},
+  {en:"Your total is four thousand colones.",es:"Su total es cuatro mil colones.",pron:"Soo toh-TAL es KWAH-troh meel koh-LOH-nes.",cat:"grocery",sub:"worker",speaker:"staff"},
+  {en:"Do you have exact change?",es:"¿Tiene cambio exacto?",pron:"¿Tee-EH-neh KAM-bee-oh ex-AK-toh?",cat:"grocery",sub:"worker",speaker:"staff"},
+  {en:"Please enter your PIN.",es:"Por favor ingrese su PIN.",pron:"Por fah-BOR een-GREH-seh soo peen.",cat:"grocery",sub:"worker",speaker:"staff"},
+  {en:"Your card was declined.",es:"Su tarjeta fue rechazada.",pron:"Soo tar-HEH-tah fweh reh-chah-SAH-dah.",cat:"grocery",sub:"worker",speaker:"staff"},
+  {en:"The organic produce is over there.",es:"Los productos orgánicos están por allá.",pron:"Los pro-DOOK-tos or-GAH-nee-kos es-TAN por ah-YAH.",cat:"grocery",sub:"worker",speaker:"staff"},
+];
+
+const CATS = [
+  {id:"all", label:"All sentences"},
+  {id:"restaurant-you", label:"🍽 Restaurant — you"},
+  {id:"restaurant-staff", label:"🍽 Restaurant — staff"},
+  {id:"grocery-you", label:"🛒 Grocery — you"},
+  {id:"grocery-worker", label:"🛒 Grocery — workers"},
+];
+
+let words = [...ALL];
+let current = 0;
+let autoPlay = false;
+let speaking = false;
+let revealed = false;
+let activeCat = "all";
+
+function filterWords(catId) {
+  if (catId === "all") return [...ALL];
+  if (catId === "restaurant-you") return ALL.filter(w => w.cat === "restaurant" && w.speaker === "you");
+  if (catId === "restaurant-staff") return ALL.filter(w => w.cat === "restaurant" && w.speaker === "staff");
+  if (catId === "grocery-you") return ALL.filter(w => w.cat === "grocery" && w.speaker === "you");
+  if (catId === "grocery-worker") return ALL.filter(w => w.cat === "grocery" && w.speaker === "staff");
+  return [...ALL];
+}
+
+// Build category pills
+const catScroll = document.getElementById("catScroll");
+CATS.forEach(cat => {
+  const b = document.createElement("button");
+  b.className = "cat-pill" + (cat.id === "all" ? " active-all" : "");
+  b.textContent = cat.label;
+  b.dataset.catid = cat.id;
+  b.onclick = () => {
+    activeCat = cat.id;
+    document.querySelectorAll(".cat-pill").forEach(x => x.className = "cat-pill");
+    const cls = cat.id.startsWith("restaurant") ? "active-restaurant" : cat.id.startsWith("grocery") ? "active-grocery" : "active-all";
+    b.classList.add(cls);
+    words = filterWords(cat.id);
+    current = 0;
+    stopAuto();
+    renderCard();
+  };
+  catScroll.appendChild(b);
+});
+
+document.getElementById("speedSlider").oninput = function() {
+  document.getElementById("speedVal").textContent = parseFloat(this.value).toFixed(1) + "×";
+};
+document.getElementById("pauseSlider").oninput = function() {
+  document.getElementById("pauseVal").textContent = parseFloat(this.value).toFixed(1) + "s";
+};
+function getSpeed() { return parseFloat(document.getElementById("speedSlider").value); }
+function getPause() { return parseFloat(document.getElementById("pauseSlider").value) * 1000; }
+
+function renderCard(phase) {
+  const w = words[current];
+  revealed = phase === "es";
+  const pct = ((current + 1) / words.length * 100).toFixed(1);
+  document.getElementById("progressFill").style.width = pct + "%";
+  document.getElementById("wordCount").textContent = (current + 1) + " / " + words.length;
+
+  // Scene badge
+  const badge = document.getElementById("sceneBadge");
+  badge.className = "scene-badge scene-" + w.cat;
+  const sceneLabel = w.cat === "restaurant" ? "🍽 Restaurant" : "🛒 Grocery";
+  const speakerLabel = w.speaker === "staff" ? " — staff speaking" : " — you speaking";
+  badge.textContent = sceneLabel + speakerLabel;
+
+  // Speaker note
+  document.getElementById("speakerNote").textContent = w.speaker === "staff" ? "listen & understand" : "you say this";
+
+  document.getElementById("sentEn").textContent = w.en;
+
+  const tag = document.getElementById("langTag");
+  const es = document.getElementById("sentEs");
+  const pron = document.getElementById("sentPron");
+  const wave = document.getElementById("wave");
+
+  if (phase === "es") {
+    tag.className = "lang-tag lang-es";
+    tag.textContent = "Español";
+    es.style.display = "block";
+    es.textContent = w.es;
+    pron.style.display = "block";
+    pron.textContent = w.pron;
+  } else {
+    tag.className = "lang-tag lang-en";
+    tag.textContent = "English";
+    es.style.display = "none";
+    pron.style.display = "none";
+  }
+
+  // Wave color
+  wave.className = "wave" + (speaking ? " active wave-" + w.cat : "");
+  document.getElementById("card").className = "card" + (speaking ? " speaking-" + w.cat : "");
+}
+
+function setStatus(msg) { document.getElementById("status").textContent = msg; }
+
+function setPlayUI(playing) {
+  const btn = document.getElementById("playBtn");
+  btn.classList.toggle("playing", playing);
+  document.getElementById("playIcon").textContent = playing ? "■" : "▶";
+  document.getElementById("playLabel").textContent = playing ? "Stop" : "Play sentence";
+}
+
+function speak(text, lang, rate, onDone) {
+  if (!window.speechSynthesis) { if (onDone) onDone(); return; }
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = lang;
+  u.rate = rate;
+  u.onend = () => { if (onDone) onDone(); };
+  u.onerror = () => { if (onDone) onDone(); };
+  window.speechSynthesis.speak(u);
+}
+
+function playCard() {
+  if (speaking) {
+    window.speechSynthesis && window.speechSynthesis.cancel();
+    speaking = false;
+    setPlayUI(false);
+    setStatus("");
+    renderCard(revealed ? "es" : "en");
+    return;
+  }
+  const w = words[current];
+  const rate = getSpeed();
+  const pause = getPause();
+  speaking = true;
+  setPlayUI(true);
+  setStatus("English…");
+  renderCard("en");
+  speak(w.en, "en-US", rate, () => {
+    if (!speaking) return;
+    setTimeout(() => {
+      if (!speaking) return;
+      setStatus("Español…");
+      renderCard("es");
+      speak(w.es, "es-MX", rate * 0.85, () => {
+        speaking = false;
+        setPlayUI(false);
+        setStatus("");
+        renderCard("es");
+        if (autoPlay) {
+          setTimeout(() => {
+            if (!autoPlay) return;
+            if (current < words.length - 1) {
+              current++;
+              renderCard();
+              playCard();
+            } else {
+              stopAuto();
+              setStatus("All " + words.length + " sentences complete! ¡Excelente!");
+            }
+          }, pause);
+        }
+      });
+    }, pause * 0.5);
+  });
+}
+
+function stopAuto() {
+  autoPlay = false;
+  speaking = false;
+  window.speechSynthesis && window.speechSynthesis.cancel();
+  setPlayUI(false);
+  document.getElementById("autoBtn").textContent = "⟳ Auto-play all";
+  document.getElementById("autoBtn").classList.remove("on");
+  setStatus("");
+  renderCard(revealed ? "es" : "en");
+}
+
+function toggleAuto() {
+  if (autoPlay) { stopAuto(); return; }
+  autoPlay = true;
+  document.getElementById("autoBtn").textContent = "⏹ Stop";
+  document.getElementById("autoBtn").classList.add("on");
+  playCard();
+}
+
+function navigate(dir) {
+  stopAuto();
+  current = Math.max(0, Math.min(words.length - 1, current + dir));
+  renderCard();
+}
+
+function shuffleSentences() {
+  stopAuto();
+  for (let i = words.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [words[i], words[j]] = [words[j], words[i]];
+  }
+  current = 0;
+  renderCard();
+  setStatus("Shuffled! ¡Vamos!");
+  setTimeout(() => setStatus(""), 2000);
+}
+
+// Tap to flip
+document.getElementById("card").addEventListener("click", () => {
+  if (!speaking) {
+    renderCard(revealed ? "en" : "es");
+  }
+});
+
+// Swipe
+let touchStartX = 0;
+document.addEventListener("touchstart", e => { touchStartX = e.touches[0].clientX; }, {passive: true});
+document.addEventListener("touchend", e => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  if (Math.abs(dx) > 50) navigate(dx < 0 ? 1 : -1);
+}, {passive: true});
+
+renderCard();
+</script>
+</body>
+</html>
