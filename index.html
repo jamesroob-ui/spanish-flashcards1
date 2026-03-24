@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Spanish Flashcards</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e1117;
+    --surface: #181d27;
+    --surface2: #1f2636;
+    --border: rgba(255,255,255,0.08);
+    --text: #f0ece4;
+    --muted: #7a8499;
+    --accent: #e8b84b;
+    --accent2: #5bb8a0;
+    --restaurant: #e07b5b;
+    --grocery: #5bb8a0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    min-height: 100vh; background: var(--bg); color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    background-image: radial-gradient(ellipse at 20% 10%, rgba(232,184,75,0.07) 0%, transparent 50%),
+                      radial-gradient(ellipse at 80% 90%, rgba(91,184,160,0.06) 0%, transparent 50%);
+  }
+
+  .container {
+    max-width: 480px; margin: 0 auto;
+    padding: 3rem 1.5rem 2rem;
+    display: flex; flex-direction: column; gap: 2rem;
+  }
+
+  .hero { text-align: center; }
+  .hero h1 {
+    font-family: 'Fraunces', serif; font-size: 36px; font-weight: 400;
+    color: var(--accent); letter-spacing: -0.5px; margin-bottom: 6px;
+  }
+  .hero h1 span { font-style: italic; color: var(--muted); }
+  .hero p { font-size: 15px; color: var(--muted); line-height: 1.6; }
+
+  .section-label {
+    font-size: 11px; font-weight: 500; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+  }
+
+  .pack-card {
+    display: block; text-decoration: none;
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: 20px; padding: 1.5rem;
+    transition: all 0.2s; margin-bottom: 12px;
+    position: relative; overflow: hidden;
+  }
+  .pack-card:active { transform: scale(0.98); }
+  .pack-card:hover { border-color: rgba(255,255,255,0.15); background: var(--surface2); }
+
+  .pack-card .accent-bar {
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  }
+  .pack-card.vocab .accent-bar { background: linear-gradient(90deg, var(--accent), transparent); }
+  .pack-card.sentences .accent-bar { background: linear-gradient(90deg, var(--restaurant), var(--grocery)); }
+
+  .pack-top { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .pack-icon {
+    width: 42px; height: 42px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .pack-icon.vocab { background: rgba(232,184,75,0.12); }
+  .pack-icon.sentences { background: rgba(224,123,91,0.12); }
+
+  .pack-title { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 400; color: var(--text); }
+  .pack-count { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .pack-desc { font-size: 14px; color: var(--muted); line-height: 1.55; }
+
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .tag {
+    font-size: 11px; padding: 3px 10px; border-radius: 20px;
+    border: 0.5px solid var(--border); color: var(--muted);
+  }
+
+  .arrow {
+    position: absolute; right: 1.25rem; top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px; color: var(--muted);
+  }
+
+  .coming-soon {
+    background: var(--surface); border: 0.5px dashed var(--border);
+    border-radius: 20px; padding: 1.25rem 1.5rem;
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 12px; opacity: 0.5;
+  }
+  .coming-soon .cs-icon { font-size: 20px; }
+  .coming-soon .cs-text { font-size: 14px; color: var(--muted); }
+  .coming-soon .cs-badge {
+    margin-left: auto; font-size: 10px; font-weight: 500;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 20px;
+    background: var(--surface2); color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .footer { text-align: center; font-size: 12px; color: var(--muted); opacity: 0.5; padding-top: 1rem; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="hero">
+    <h1>Español <span>flashcards</span></h1>
+    <p>Audio-first Spanish learning.<br>English first, then Spanish — old school style.</p>
+  </div>
+
+  <div>
+    <div class="section-label">Your packs</div>
+
+    <a class="pack-card vocab" href="vocabulary.html">
+      <div class="accent-bar"></div>
+      <div class="pack-top">
+        <div class="pack-icon vocab">📚</div>
+        <div>
+          <div class="pack-title">Core Vocabulary</div>
+          <div class="pack-count">100 words</div>
+        </div>
+      </div>
+      <div class="pack-desc">The most common conversational words — pronouns, verbs, adjectives, numbers, and more.</div>
+      <div class="tags">
+        <span class="tag">basics</span>
+        <span class="tag">greetings</span>
+        <span class="tag">verbs</span>
+        <span class="tag">numbers</span>
+        <span class="tag">+6 more</span>
+      </div>
+      <div class="arrow">›</div>
+    </a>
+
+    <a class="pack-card sentences" href="sentences.html">
+      <div class="accent-bar"></div>
+      <div class="pack-top">
+        <div class="pack-icon sentences">🗣</div>
+        <div>
+          <div class="pack-title">Real-World Sentences</div>
+          <div class="pack-count">80 sentences</div>
+        </div>
+      </div>
+      <div class="pack-desc">Ordering at a restaurant, shopping at the grocery store — including what staff will say to you.</div>
+      <div class="tags">
+        <span class="tag">🍽 restaurant</span>
+        <span class="tag">🛒 grocery</span>
+        <span class="tag">you speaking</span>
+        <span class="tag">staff speaking</span>
+      </div>
+      <div class="arrow">›</div>
+    </a>
+  </div>
+
+  <div>
+    <div class="section-label">Coming soon</div>
+
+    <div class="coming-soon">
+      <div class="cs-icon">🗺</div>
+      <div class="cs-text">Directions &amp; Getting Around</div>
+      <div class="cs-badge">soon</div>
+    </div>
+
+    <div class="coming-soon">
+      <div class="cs-icon">💊</div>
+      <div class="cs-text">Pharmacy &amp; Medical</div>
+      <div class="cs-badge">soon</div>
+    </div>
+
+    <div class="coming-soon">
+      <div class="cs-icon">🏄</div>
+      <div class="cs-text">Beach &amp; Daily Life</div>
+      <div class="cs-badge">soon</div>
+    </div>
+
+  </div>
+
+  <div class="footer">jamesroob-ui.github.io/spanish-flashcards1</div>
+
+</div>
+</body>
+</html>
